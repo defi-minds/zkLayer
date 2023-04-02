@@ -6,6 +6,9 @@ import "./zkbank/verifier.sol";
 interface IERC20 {
     function transfer(address recipient, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
+    function encryptData(bytes memory _data, address _recipient) external view returns (bytes memory);
+    function decryptData(bytes memory _encryptedData) external view returns (bytes memory);
+    function verifySignature(bytes memory _data, bytes memory _signature, address _signer) external view returns (bool);
 }
 
 contract ConfidentialBank is IConfidentialTransaction {
