@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "./MerkleProof.sol";
+
 library Verifier {
     function verifyDepositProof(
         uint256 _amount,
@@ -13,12 +16,12 @@ library Verifier {
         return MerkleProof.verify(_proof, _merkleRoot, leaf);
     }
     
-    function encrypt(bytes memory _data, address _recipient) public pure returns (bytes memory) {
+    function encryptData(bytes memory _data, address _recipient) public pure returns (bytes memory) {
         bytes memory encodedData = abi.encodePacked(_data, _recipient);
         return encodedData;
     }
     
-    function decrypt(bytes memory _encryptedData) public pure returns (bytes memory) {
+    function decryptData(bytes memory _encryptedData) public pure returns (bytes memory) {
         (bytes memory data, ) = abi.decode(_encryptedData, (bytes, address));
         return data;
     }
@@ -27,27 +30,5 @@ library Verifier {
         bytes32 messageHash = keccak256(_data);
         address recoveredSigner = ECDSA.recover(messageHash, _signature);
         return recoveredSigner == _signer;
-    }
-}
-
-library MerkleProof {
-    function verify(
-        bytes memory proof,
-        bytes32 root,
-        bytes32 leaf
-    ) internal pure returns (bool) {
-        bytes32 computedHash = leaf;
-        for (uint256 i = 0; i < proof.length; i += 32) {
-            bytes32 proofElement;
-            assembly {
-                proofElement := mload(add(proof, add(32, i)))
-            }
-            if (computedHash < proofElement) {
-                computedHash = keccak256(abi.encodePacked(computedHash, proofElement));
-            } else {
-                computedHash = keccak256(abi.encodePacked(proofElement, computedHash));
-            }
-        }
-        return computedHash == root;
     }
 }
